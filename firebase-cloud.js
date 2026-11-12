@@ -1,4 +1,4 @@
-// TONE LAB v9.3 — student number + optional nickname; teacher read-only dashboard.
+// TONE LAB v9.4 — student number + optional nickname; teacher read-only dashboard.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js';
 import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js';
@@ -8,14 +8,14 @@ const app=initializeApp(config),auth=getAuth(app),db=getFirestore(app),$=id=>doc
 let student=null,teacher=false,unsub=null,unsubWords=null,allRows=[],wordRows=[];
 const status=msg=>{$('cloudStatus').textContent=msg};
 const validPin=v=>/^\d{6}$/.test(v);
-const validNumber=v=>/^(?:[1-9]|[12]\d|3[0-7])$/.test(v);
+const validNumber=v=>/^(?:[1-9]|[1-4]\d|50)$/.test(v);
 const cleanNumber=v=>String(v||'').trim().replace(/^0+(?=\d)/,'');
 const cleanNickname=v=>String(v||'').trim().replace(/\s+/g,' ').slice(0,20);
 const fmtTime=t=>t?.toDate?.()?.toLocaleString('th-TH')||'กำลังบันทึก';
 function updateUI(){ $('cloudLeave').style.display=student?'':'none';$('cloudDash').style.display=teacher?'':'none';$('cloudTeacher').style.display=teacher?'none':'';$('cloudJoin').disabled=!!student||teacher;$('cloudPin').disabled=!!student||teacher;$('cloudCode').disabled=!!student||teacher;$('cloudNickname').disabled=!!student||teacher;$('cloudRoomType').disabled=!!student||teacher; }
 async function join(){
  const pin=$('cloudPin').value.trim(),code=cleanNumber($('cloudCode').value),nickname=cleanNickname($('cloudNickname').value),roomType=$('cloudRoomType').value;
- if(!validPin(pin)||!validNumber(code)){status('กรอกรหัสห้อง 6 หลัก และเลขที่นักเรียน 1–37');return}
+ if(!validPin(pin)||!validNumber(code)){status('กรอกรหัสห้อง 6 หลัก และเลขที่นักเรียน 1–50');return}
  try{status('กำลังเชื่อมต่อ...');if(!auth.currentUser||!auth.currentUser.isAnonymous){if(auth.currentUser)await signOut(auth);await signInAnonymously(auth)}
  teacher=false;student={pin,code,nickname,roomType};sessionStorage.setItem('toneStudent',JSON.stringify(student));updateUI();status('เข้าห้องแล้ว: '+pin+' • เลขที่ '+code+(nickname?' ('+nickname+')':'')+(roomType==='home'?' | ห้องฝึกที่บ้าน: กดบันทึกคำได้':' | ห้องประเมินผล'));if(roomType==='home')loadWords();}
  catch(e){status('เข้าห้องไม่สำเร็จ: '+e.message)}
